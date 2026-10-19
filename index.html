@@ -199,7 +199,7 @@
             } catch(e) { console.log('Audio error:', e); }
         };
 
-        // 3. 最新更新的 15 道题目数组
+        // 3. 15 道完整题目数组
         const questions = [
             {
                 question: "根据马来西亚联邦宪法，哪一个条文明确规定马来语（Bahasa Melayu）为国语？",
@@ -301,7 +301,7 @@
         let timeElapsed = 0;
         let teacherDataList = [];
 
-        // 4. 实时监听 Firebase 数据库更新排行榜 (按分数降序)
+        // 4. 实时监听 Firebase 数据库更新排行榜
         const scoresRef = collection(db, "quiz_scores");
         const q = query(scoresRef, orderBy("score", "desc"));
 
@@ -315,7 +315,6 @@
                 allRecords.push(doc.data());
             });
 
-            // 前端二次排序（同分时用时少的靠前）
             allRecords.sort((a, b) => {
                 if (b.score !== a.score) {
                     return b.score - a.score;
@@ -325,7 +324,6 @@
 
             teacherDataList = allRecords;
 
-            // 渲染前5名
             allRecords.slice(0, 5).forEach((data, index) => {
                 const rank = index + 1;
                 const item = document.createElement('div');
@@ -513,6 +511,3 @@
     </script>
 </body>
 </html>
-```<FollowUp>
-系统已更新完成！您是否还需要导出成绩表功能，或者添加答题倒计时限制？
-</FollowUp>
