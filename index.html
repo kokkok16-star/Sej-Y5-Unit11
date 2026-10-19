@@ -199,97 +199,97 @@
             } catch(e) { console.log('Audio error:', e); }
         };
 
-        // 3. 15 道完整题目数组
+        // 3. 最新更新的 15 道题目数组
         const questions = [
             {
                 question: "根据马来西亚联邦宪法，哪一个条文明确规定马来语（Bahasa Melayu）为国语？",
-                options: ["第 10 条文", "第 152 条文", "第 153 条文", "第 181 条文"],
-                answer: 1, // B
-                explanation: "联邦宪法第152条文明确规定马来语为马来西亚的国语（Bahasa Kebangsaan）。"
+                options: ["第 152 条文", "第 10 条文", "第 153 条文", "第 181 条文"],
+                answer: 0, // A
+                explanation: "联邦宪法第 152 条文（Perkara 152）明确奠定了马来语作为马来西亚国语（Bahasa Kebangsaan）的最高法律地位。"
             },
             {
                 question: "联邦宪法第152条文在阐明马来语为国语的同时，也保障了公民的哪项语言权利？",
                 options: ["只能在私密场合使用国语的权利", "自由学习和使用其他语言的权利（非官方用途）", "强制禁止所有学校教授母语的权力", "仅限在商业活动中使用外语的权利"],
                 answer: 1, // B
-                explanation: "宪法第152条文明确保障任何人都不得被禁止或阻止在非官方场合学习或使用其他语言。"
+                explanation: "宪法第 152 条文附带保障条款，规定任何人不得被禁止或阻止在非官方用途下学习、使用或教授其他语言，体现了多元语言与文化的包容性。"
             },
             {
                 question: "哪一项法案的颁布进一步巩固了马来语作为国语和官方语言的法律地位？",
-                options: ["《1963/67年国家语言法案》（Akta Bahasa Kebangsaan 1963/67）", "《1948年煽动法案》", "《1957年独立法案》", "《1963年马来西亚协定》"],
-                answer: 0, // A
-                explanation: "《1963/67年国家语言法案》确立了马来语作为国家官方事务主要语言的法律地位。"
+                options: ["《1948年煽动法案》", "《1957年独立法案》", "《1963/67年国家语言法案》（Akta Bahasa Kebangsaan 1963/67）", "《1963年马来西亚协定》"],
+                answer: 2, // C
+                explanation: "《1963/67年国家语言法案》在法律层面规范了马来语在政府行政机关、法庭等官方事务中的具体应用。"
             },
             {
                 question: "根据教育法案（如《1961年教育法案》与《1996年教育法案》），马来语在国家教育体系中的主要定位是什么？",
-                options: ["仅作为选修科目", "国家教育体系中的主要教学媒介语", "仅用于课外活动交流", "仅用于高等教育阶段"],
-                answer: 1, // B
-                explanation: "国家教育法案规定马来语为国家教育体系中的主要教学媒介语，以贯彻国语教学。"
+                options: ["仅作为选修科目", "仅用于课外活动交流", "仅用于高等教育阶段", "国家教育体系中的主要教学媒介语"],
+                answer: 3, // D
+                explanation: "《1961年教育法案》与《1996年教育法案》皆明确将马来语列为国家教育体系中的主要教学媒介语，以落实国语教学策略。"
             },
             {
                 question: "马来语作为“官方语言”（Bahasa Rasmi）的主要应用场合是以下哪项？",
-                options: ["国际贸易展览的唯一下单语言", "政府机关行政、立法、司法及官方公文交流", "家庭内部的日常生活对话", "私人企业的内部娱乐活动"],
-                answer: 1, // B
-                explanation: "官方语言是指在政府部门行政、法庭、立法机关及官方文件交流中使用的法律指定语言。"
+                options: ["政府机关行政、立法、司法及官方公文交流", "国际贸易展览的唯一下单语言", "家庭内部的日常生活对话", "私人企业的内部娱乐活动"],
+                answer: 0, // A
+                explanation: "官方语言指的是政府机构在处理行政公文、立法议会议程及法庭审讯时所强制使用的指定法律语言。"
             },
             {
                 question: "马来语被称为“知识语言”（Bahasa Ilmu），主要体现在哪一方面？",
-                options: ["它是马六甲王朝时代唯一的货币单位", "它具备传授与表达各种学术、科学和高等知识的能力", "它是外国游客来到马来西亚唯一能听懂的语言", "它是所有戏剧表演中的指定语言"],
-                answer: 1, // B
-                explanation: "马来语作为知识语言，能够用于撰写学术著作、进行科学研究和高深知识交流。"
+                options: ["它是马六甲王朝时代唯一的货币单位", "它是外国游客来到马来西亚唯一能听懂的语言", "它具备传授与表达各种学术、科学和高等知识的能力", "它是所有戏剧表演中的指定语言"],
+                answer: 2, // C
+                explanation: "知识语言指的是一种语言具备足够的专业词汇量，能够作为撰写学术论著、进行高等教育教学与科技研究的媒介。"
             },
             {
                 question: "为什么马来语被视为马来西亚的“团结语言”（Bahasa Perpaduan）？",
-                options: ["因为它只被单一族群所使用", "因为它作为共同沟通媒介，能够超越族群界限，促进各族相互理解", "因为它规定所有公民必须穿着相同的服装", "镜它是东南亚地区唯一的语言"],
-                answer: 1, // B
-                explanation: "国语作为全民共同使用的沟通语言，能够搭建沟通桥梁，促进多元种族社会的和谐与团结。"
+                options: ["因为它只被单一族群所使用", "因为它规定所有公民必须穿着相同的服装", "镜它是东南亚地区唯一的语言", "因为它作为共同沟通媒介，能够超越族群界限，促进各族相互理解"],
+                answer: 3, // D
+                explanation: "马来语作为全民共通语（Bahasa Perpaduan），能跨越种族与文化隔阂，促进不同族群之间的情感沟通与社会凝聚力。"
             },
             {
                 question: "在历史（如马六甲王朝时期）上，马来语曾扮演“通用语”（Lingua Franca）的角色，其含义是什么？",
                 options: ["仅在宫廷内使用的秘密语言", "不同语言背景的人群之间共同使用的沟通语言", "仅用于书写历史诗歌的特殊语言", "仅限宗教祭司使用的语言"],
                 answer: 1, // B
-                explanation: "通用语（Lingua Franca）是指不同语言社群在贸易和日常交往中共同使用的交流语言。"
+                explanation: "Lingua Franca（通用语） 是指来自不同地区、使用不同母语的人群在交往和交易时所共同使用的中介语言。"
             },
             {
                 question: "在古代东南亚，马来语作为“商业语言”（Bahasa Perdagangan）发挥了重要作用，主要是因为什么？",
-                options: ["各国商人必须通过翻译官考试才能交易", "马来语简明易学，并广泛传播于区域内的各大港口与贸易中心", "当时法律禁止商人使用其他任何外语", "马来语是当时唯一的商品代名词"],
-                answer: 1, // B
-                explanation: "马来语在东南亚主要商埠（如马六甲）广泛普及，各国外国商人均使用马来语洽谈商务和买卖交易。"
+                options: ["马来语简明易学，并广泛传播于区域内的各大港口与贸易中心", "各国商人必须通过翻译官考试才能交易", "当时法律禁止商人使用其他任何外语", "马来语是当时唯一的商品代名词"],
+                answer: 0, // A
+                explanation: "马来语因其结构简单易学，并在东南亚海上贸易网络（如马六甲港口）中广泛流通，从而成为各国商贾洽谈贸易的必备语言。"
             },
             {
                 question: "在马来西亚，主要负责推广、发展马来语文及出版相关书籍的政府机构是哪一个？",
-                options: ["国家语文局（Dewan Bahasa dan Pustaka, DBP）", "国家旅游局（Tourism Malaysia）", "国家档案馆（Arkib Negara Malaysia）", "国家文化与艺术局（JKKN）"],
-                answer: 0, // A
-                explanation: "国家语文局（DBP）成立于1956年，是推动马来语规范化、出版学术与文学读物及普及国语的核心机构。"
+                options: ["国家旅游局（Tourism Malaysia）", "国家档案馆（Arkib Negara Malaysia）", "国家文化与艺术局（JKKN）", "国家语文局（Dewan Bahasa dan Pustaka, DBP）"],
+                answer: 3, // D
+                explanation: "国家语文局（DBP） 是成立于 1956 年的法定机构，专门致力于规范马来语语法、拓展新词汇及出版各类学术与文学读物。"
             },
             {
                 question: "国家语文局（DBP）著名的推广口号是什么，意在强调语言与民族精神的紧密联系？",
-                options: ["\"Majulah Singapura\"", "\"Bahasa Jiwa Bangsa\"", "\"Kerana Mu Malaysia\"", "\"Malaysia Boleh\""],
-                answer: 1, // B
-                explanation: "“Bahasa Jiwa Bangsa”（语言是民族的灵魂）是推广国语最著名的口号，强调国语对塑造国家认同与民族尊严的重要性。"
+                options: ["\"Majulah Singapura\"", "\"Kerana Mu Malaysia\"", "\"Bahasa Jiwa Bangsa\"", "\"Malaysia Boleh\""],
+                answer: 2, // C
+                explanation: "“Bahasa Jiwa Bangsa”（语言是民族的灵魂） 是推广国语运动的核心精神口号，表达了语言对于建立国家尊严与族群认同的重要性。"
             },
             {
                 question: "每年政府都会举办哪项全国性活动，以提高全民尊崇和使用国语的意识？",
-                options: ["独立月（Bulan Kemerdekaan）", "国语月（Bulan Bahasa Kebangsaan）", "青年科技节（Festival Belia）", "国家文化周（Minggu Kebudayaan）"],
-                answer: 1, // B
-                explanation: "“国语月”（Bulan Bahasa Kebangsaan）是全国性重点推广活动，旨在鼓励各界在日常生活中尊崇并规范使用国语。"
+                options: ["国语月（Bulan Bahasa Kebangsaan）", "独立月（Bulan Kemerdekaan）", "青年科技节（Festival Belia）", "国家文化周（Minggu Kebudayaan）"],
+                answer: 0, // A
+                explanation: "政府通过举办每年一度的“国语月”（Bulan Bahasa Kebangsaan），在全国各阶层推动各类语文竞赛与宣传，鼓励大众规范使用国语。"
             },
             {
                 question: "哪所国立大学的建立是马来语作为高等教育教学媒介语（知识语言）的重要里程碑？",
                 options: ["马来亚大学（UM）", "马来西亚国民大学（Universiti Kebangsaan Malaysia, UKM）", "理科大学（USM）", "工艺大学（UTM）"],
                 answer: 1, // B
-                explanation: "马来西亚国民大学（UKM）于1970年成立，确立了马来语作为高等学术与科学研究教学媒介语的地位。"
+                explanation: "马来西亚国民大学（UKM） 于 1970 年创办，率先全面采用马来语作为学术与科研教学媒介，证明了马来语作为高等知识语言的能力。"
             },
             {
                 question: "许多外来词汇（如 kemeja, jendela, sekolah, hospital 等）融入马来语词库，这说明了马来语具有什么特性？",
-                options: ["缺乏独立的词汇体系", "具有很强的开放性与包容性，能够丰富自身的词汇", "完全排斥其他文化的影响", "只在近代才开始发展"],
-                answer: 1, // B
-                explanation: "马来语在演变过程中吸收了阿拉伯语、梵语、葡萄牙语、英语等词汇，体现了其包容性与时代适应能力。"
+                options: ["缺乏独立的词汇体系", "完全排斥其他文化的影响", "具有很强的开放性与包容性，能够丰富自身的词汇", "只在近代才开始发展"],
+                answer: 2, // C
+                explanation: "马来语在漫长的发展历程中积极吸收梵语、阿拉伯语、葡萄牙语和英语等借词，展示了其高度的开放性与包容性。"
             },
             {
                 question: "作为马来西亚公民，我们在日常生活中维护和尊崇国语地位的正确做法是什么？",
-                options: ["拒绝学习其他任何语言", "以流利、规范的国语进行沟通，并在正式与公共场合积极使用国语", "认为国语只在应付学校考试时有用", "仅在出国旅游时才使用国语"],
-                answer: 1, // B
-                explanation: "维护国语尊严是公民的共同责任，大家应在日常生活和公共交流中自豪并规范地使用国语。"
+                options: ["拒绝学习其他任何语言", "认为国语只在应付学校考试时有用", "仅在出国旅游时才使用国语", "以流利、规范的国语进行沟通，并在正式与公共场合积极使用国语"],
+                answer: 3, // D
+                explanation: "尊崇国语是爱国精神的体现，公民应当在公共交往中积极且规范地使用国语，同时尊重并掌握其他语言。"
             }
         ];
 
@@ -301,40 +301,53 @@
         let timeElapsed = 0;
         let teacherDataList = [];
 
-        // 4. 实时监听 Firebase 数据库更新排行榜
+        // 4. 实时监听 Firebase 数据库更新排行榜 (按分数降序)
         const scoresRef = collection(db, "quiz_scores");
-        const q = query(scoresRef, orderBy("score", "desc"), orderBy("timeElapsed", "asc"));
+        const q = query(scoresRef, orderBy("score", "desc"));
 
         onSnapshot(q, (snapshot) => {
             const leaderboardList = document.getElementById('leaderboard-list');
             leaderboardList.innerHTML = '';
             teacherDataList = [];
 
-            let rank = 1;
+            let allRecords = [];
             snapshot.forEach((doc) => {
-                const data = doc.data();
-                teacherDataList.push(data);
-
-                if (rank <= 5) {
-                    const item = document.createElement('div');
-                    item.className = "flex justify-between items-center bg-white p-2.5 rounded-xl border border-slate-100 shadow-sm text-sm";
-                    item.innerHTML = `
-                        <div class="flex items-center gap-2">
-                            <span class="font-bold ${rank === 1 ? 'text-amber-500' : rank === 2 ? 'text-slate-400' : rank === 3 ? 'text-amber-700' : 'text-slate-500'}">${rank}.</span>
-                            <span class="font-semibold text-slate-700 truncate max-w-[100px]">${data.name}</span>
-                        </div>
-                        <div class="text-xs text-slate-500">
-                            <span class="font-bold text-indigo-600">${data.score}分</span> (${data.timeElapsed}s)
-                        </div>
-                    `;
-                    leaderboardList.appendChild(item);
-                }
-                rank++;
+                allRecords.push(doc.data());
             });
 
-            if (snapshot.empty) {
+            // 前端二次排序（同分时用时少的靠前）
+            allRecords.sort((a, b) => {
+                if (b.score !== a.score) {
+                    return b.score - a.score;
+                }
+                return (a.timeElapsed || 0) - (b.timeElapsed || 0);
+            });
+
+            teacherDataList = allRecords;
+
+            // 渲染前5名
+            allRecords.slice(0, 5).forEach((data, index) => {
+                const rank = index + 1;
+                const item = document.createElement('div');
+                item.className = "flex justify-between items-center bg-white p-2.5 rounded-xl border border-slate-100 shadow-sm text-sm";
+                item.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold ${rank === 1 ? 'text-amber-500' : rank === 2 ? 'text-slate-400' : rank === 3 ? 'text-amber-700' : 'text-slate-500'}">${rank}.</span>
+                        <span class="font-semibold text-slate-700 truncate max-w-[100px]">${data.name}</span>
+                    </div>
+                    <div class="text-xs text-slate-500">
+                        <span class="font-bold text-indigo-600">${data.score}分</span> (${data.timeElapsed || 0}s)
+                    </div>
+                `;
+                leaderboardList.appendChild(item);
+            });
+
+            if (allRecords.length === 0) {
                 leaderboardList.innerHTML = '<p class="text-slate-400 text-sm text-center py-4">暂无答题记录</p>';
             }
+        }, (error) => {
+            console.error("Firebase 读取错误: ", error);
+            document.getElementById('leaderboard-list').innerHTML = '<p class="text-red-400 text-sm text-center py-4">排行榜读取失败</p>';
         });
 
         // 5. 校验与开始答题
@@ -500,3 +513,6 @@
     </script>
 </body>
 </html>
+```<FollowUp>
+系统已更新完成！您是否还需要导出成绩表功能，或者添加答题倒计时限制？
+</FollowUp>
