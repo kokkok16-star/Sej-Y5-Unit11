@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5年级历史：单元11 - 马来语是国语</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4 min-h-screen">
+
+    <!-- 主容器 -->
+    <div class="glass-card w-full max-w-4xl p-6 md:p-8 relative">
+        
+        <!-- 教师专区入口按钮 -->
+        <button onclick="openTeacherModal()" class="absolute top-6 right-6 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 transition border border-slate-300 shadow-sm">
+            🔒 教师专区
+        </button>
+
+        <!-- 标题 -->
+        <div class="text-center mb-8">
+            <h1 class="text-2xl md:text-3xl font-extrabold text-indigo-700 tracking-wide">
+                5年级历史：单元11 - 马来语是国语
+            </h1>
+            <p class="text-slate-500 text-sm md:text-base mt-1">历史知识互动挑战系统 (共15题)</p>
+        </div>
+
+        <!-- 1. 登录与首页视图 -->
+        <div id="view-login" class="grid grid-cols-1 md:grid-cols-12 gap-8">
+            <!-- 表单输入区 -->
+            <div class="md:col-span-7 space-y-5">
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1">学生姓名 (中文 / 英文):</label>
+                    <input type="text" id="input-name" placeholder="例如: 张小明 / Tan Ah Kow" 
+                        class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1">教育部邮箱 (Email):</label>
+                    <input type="email" id="input-email" placeholder="例如: m-1234567@moe-dl.edu.my" 
+                        class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                    <p id="email-error" class="text-red-500 text-xs mt-1 hidden">邮箱格式必须以 @moe-dl.edu.my 结尾！</p>
+                </div>
+                <button onclick="startQuiz()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-indigo-500/30 transition duration-200 flex items-center justify-center gap-2 text-lg">
+                    开始答题 🚀
+                </button>
+            </div>
+
+            <!-- 排行榜区 -->
+            <div class="md:col-span-5 bg-slate-50 p-5 rounded-2xl border border-slate-200 flex flex-col justify-between">
+                <div>
+                    <h2 class="text-lg font-bold text-amber-600 flex items-center gap-2 mb-4">
+                        🏆 实时英雄榜
+                    </h2>
+                    <div id="leaderboard-list" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                        <p class="text-slate-400 text-sm text-center py-4">加载排行榜中...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 答题视图 (默认隐藏) -->
+        <div id="view-quiz" class="hidden">
+            <div class="flex justify-between items-center mb-6 bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                <span id="quiz-progress" class="font-bold text-indigo-700">题目 1/15</span>
+                <span id="quiz-timer" class="text-slate-600 font-semibold">⏱️ 用时: 0s</span>
+                <span id="quiz-score" class="font-bold text-emerald-600">得分: 0</span>
+            </div>
+
+            <div class="mb-6">
+                <h3 id="question-text" class="text-lg md:text-xl font-bold text-slate-800 mb-4">
+                    <!-- 题目内容 -->
+                </h3>
+                <div id="options-container" class="space-y-3">
+                    <!-- 选项按钮 -->
+                </div>
+            </div>
+
+            <!-- 解析与下一题区域 -->
+            <div id="explanation-box" class="hidden p-4 rounded-xl mb-4 bg-amber-50 border border-amber-200">
+                <p id="explanation-result" class="font-bold text-lg mb-1"></p>
+                <p id="explanation-text" class="text-slate-700 text-sm"></p>
+                <button onclick="nextQuestion()" class="mt-4 bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700 transition">
+                    下一题 ➔
+                </button>
+            </div>
+        </div>
+
+        <!-- 3. 结果视图 (默认隐藏) -->
+        <div id="view-result" class="hidden text-center py-8">
+            <div class="text-5xl mb-4">🎉</div>
+            <h2 class="text-2xl font-extrabold text-slate-800 mb-2">挑战完成！</h2>
+            <p id="final-student-info" class="text-slate-600 mb-4"></p>
+            <div class="text-4xl font-black text-indigo-600 mb-6" id="final-score">0 分</div>
+            <button onclick="location.reload()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-8 py-3 rounded-xl shadow-lg transition">
+                返回首页 🏠
+            </button>
+        </div>
+
+    </div>
+
+    <!-- 4. 教师专区 Modal 弹窗 -->
+    <div id="teacher-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-2xl shadow-2xl relative">
+            <button onclick="closeTeacherModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-xl font-bold">✕</button>
+            
+            <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                👨‍🏫 教师后台专区
+            </h2>
+
+            <!-- 密码输入区域 -->
+            <div id="teacher-auth-sec" class="space-y-4">
+                <p class="text-sm text-slate-600">请输入管理员密码以查看学生成绩记录：</p>
+                <input type="password" id="teacher-password" placeholder="请输入密码" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                <p id="password-error" class="text-red-500 text-xs hidden">密码错误！</p>
+                <button onclick="verifyTeacher()" class="w-full bg-indigo-600 text-white font-bold py-2 rounded-lg hover:bg-indigo-700">验证登录</button>
+            </div>
+
+            <!-- 数据展示区域 -->
+            <div id="teacher-data-sec" class="hidden space-y-4">
+                <div class="max-h-80 overflow-y-auto border border-slate-200 rounded-lg">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead class="bg-slate-100 text-slate-700 border-b">
+                            <tr>
+                                <th class="p-3">姓名</th>
+                                <th class="p-3">Email</th>
+                                <th class="p-3">得分</th>
+                                <th class="p-3">用时</th>
+                                <th class="p-3">提交时间</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teacher-table-body" class="divide-y divide-slate-100">
+                            <!-- 数据行 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK 模块引入与主逻辑代码 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // 1. Firebase 配置
+        const firebaseConfig = {
+            apiKey: "AIzaSyCUSwFcndhzcRfV-wEnrw-bBNM-_b5aBqw",
+            authDomain: "sej-y5-unit-11.firebaseapp.com",
+            projectId: "sej-y5-unit-11",
+            storageBucket: "sej-y5-unit-11.firebasestorage.app",
+            messagingSenderId: "506374535093",
+            appId: "1:506374535093:web:37bccf82804987536e4bfc",
+            measurementId: "G-647DC8CKRV"
+        };
+
+        // 初始化 Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // 2. Web Audio API 音效处理
+        const playSound = (type) => {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                if (type === 'correct') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+                    osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.3);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, ctx.currentTime);
+                    osc.frequency.setValueAtTime(164.81, ctx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.4);
+                }
+            } catch(e) { console.log('Audio error:', e); }
+        };
+
+        // 3. 15 道完整题目数组
+        const questions = [
+            {
+                question: "根据马来西亚联邦宪法，哪一个条文明确规定马来语（Bahasa Melayu）为国语？",
+                options: ["第 10 条文", "第 152 条文", "第 153 条文", "第 181 条文"],
+                answer: 1, // B
+                explanation: "联邦宪法第152条文明确规定马来语为马来西亚的国语（Bahasa Kebangsaan）。"
+            },
+            {
+                question: "联邦宪法第152条文在阐明马来语为国语的同时，也保障了公民的哪项语言权利？",
+                options: ["只能在私密场合使用国语的权利", "自由学习和使用其他语言的权利（非官方用途）", "强制禁止所有学校教授母语的权力", "仅限在商业活动中使用外语的权利"],
+                answer: 1, // B
+                explanation: "宪法第152条文明确保障任何人都不得被禁止或阻止在非官方场合学习或使用其他语言。"
+            },
+            {
+                question: "哪一项法案的颁布进一步巩固了马来语作为国语和官方语言的法律地位？",
+                options: ["《1963/67年国家语言法案》（Akta Bahasa Kebangsaan 1963/67）", "《1948年煽动法案》", "《1957年独立法案》", "《1963年马来西亚协定》"],
+                answer: 0, // A
+                explanation: "《1963/67年国家语言法案》确立了马来语作为国家官方事务主要语言的法律地位。"
+            },
+            {
+                question: "根据教育法案（如《1961年教育法案》与《1996年教育法案》），马来语在国家教育体系中的主要定位是什么？",
+                options: ["仅作为选修科目", "国家教育体系中的主要教学媒介语", "仅用于课外活动交流", "仅用于高等教育阶段"],
+                answer: 1, // B
+                explanation: "国家教育法案规定马来语为国家教育体系中的主要教学媒介语，以贯彻国语教学。"
+            },
+            {
+                question: "马来语作为“官方语言”（Bahasa Rasmi）的主要应用场合是以下哪项？",
+                options: ["国际贸易展览的唯一下单语言", "政府机关行政、立法、司法及官方公文交流", "家庭内部的日常生活对话", "私人企业的内部娱乐活动"],
+                answer: 1, // B
+                explanation: "官方语言是指在政府部门行政、法庭、立法机关及官方文件交流中使用的法律指定语言。"
+            },
+            {
+                question: "马来语被称为“知识语言”（Bahasa Ilmu），主要体现在哪一方面？",
+                options: ["它是马六甲王朝时代唯一的货币单位", "它具备传授与表达各种学术、科学和高等知识的能力", "它是外国游客来到马来西亚唯一能听懂的语言", "它是所有戏剧表演中的指定语言"],
+                answer: 1, // B
+                explanation: "马来语作为知识语言，能够用于撰写学术著作、进行科学研究和高深知识交流。"
+            },
+            {
+                question: "为什么马来语被视为马来西亚的“团结语言”（Bahasa Perpaduan）？",
+                options: ["因为它只被单一族群所使用", "因为它作为共同沟通媒介，能够超越族群界限，促进各族相互理解", "因为它规定所有公民必须穿着相同的服装", "镜它是东南亚地区唯一的语言"],
+                answer: 1, // B
+                explanation: "国语作为全民共同使用的沟通语言，能够搭建沟通桥梁，促进多元种族社会的和谐与团结。"
+            },
+            {
+                question: "在历史（如马六甲王朝时期）上，马来语曾扮演“通用语”（Lingua Franca）的角色，其含义是什么？",
+                options: ["仅在宫廷内使用的秘密语言", "不同语言背景的人群之间共同使用的沟通语言", "仅用于书写历史诗歌的特殊语言", "仅限宗教祭司使用的语言"],
+                answer: 1, // B
+                explanation: "通用语（Lingua Franca）是指不同语言社群在贸易和日常交往中共同使用的交流语言。"
+            },
+            {
+                question: "在古代东南亚，马来语作为“商业语言”（Bahasa Perdagangan）发挥了重要作用，主要是因为什么？",
+                options: ["各国商人必须通过翻译官考试才能交易", "马来语简明易学，并广泛传播于区域内的各大港口与贸易中心", "当时法律禁止商人使用其他任何外语", "马来语是当时唯一的商品代名词"],
+                answer: 1, // B
+                explanation: "马来语在东南亚主要商埠（如马六甲）广泛普及，各国外国商人均使用马来语洽谈商务和买卖交易。"
+            },
+            {
+                question: "在马来西亚，主要负责推广、发展马来语文及出版相关书籍的政府机构是哪一个？",
+                options: ["国家语文局（Dewan Bahasa dan Pustaka, DBP）", "国家旅游局（Tourism Malaysia）", "国家档案馆（Arkib Negara Malaysia）", "国家文化与艺术局（JKKN）"],
+                answer: 0, // A
+                explanation: "国家语文局（DBP）成立于1956年，是推动马来语规范化、出版学术与文学读物及普及国语的核心机构。"
+            },
+            {
+                question: "国家语文局（DBP）著名的推广口号是什么，意在强调语言与民族精神的紧密联系？",
+                options: ["\"Majulah Singapura\"", "\"Bahasa Jiwa Bangsa\"", "\"Kerana Mu Malaysia\"", "\"Malaysia Boleh\""],
+                answer: 1, // B
+                explanation: "“Bahasa Jiwa Bangsa”（语言是民族的灵魂）是推广国语最著名的口号，强调国语对塑造国家认同与民族尊严的重要性。"
+            },
+            {
+                question: "每年政府都会举办哪项全国性活动，以提高全民尊崇和使用国语的意识？",
+                options: ["独立月（Bulan Kemerdekaan）", "国语月（Bulan Bahasa Kebangsaan）", "青年科技节（Festival Belia）", "国家文化周（Minggu Kebudayaan）"],
+                answer: 1, // B
+                explanation: "“国语月”（Bulan Bahasa Kebangsaan）是全国性重点推广活动，旨在鼓励各界在日常生活中尊崇并规范使用国语。"
+            },
+            {
+                question: "哪所国立大学的建立是马来语作为高等教育教学媒介语（知识语言）的重要里程碑？",
+                options: ["马来亚大学（UM）", "马来西亚国民大学（Universiti Kebangsaan Malaysia, UKM）", "理科大学（USM）", "工艺大学（UTM）"],
+                answer: 1, // B
+                explanation: "马来西亚国民大学（UKM）于1970年成立，确立了马来语作为高等学术与科学研究教学媒介语的地位。"
+            },
+            {
+                question: "许多外来词汇（如 kemeja, jendela, sekolah, hospital 等）融入马来语词库，这说明了马来语具有什么特性？",
+                options: ["缺乏独立的词汇体系", "具有很强的开放性与包容性，能够丰富自身的词汇", "完全排斥其他文化的影响", "只在近代才开始发展"],
+                answer: 1, // B
+                explanation: "马来语在演变过程中吸收了阿拉伯语、梵语、葡萄牙语、英语等词汇，体现了其包容性与时代适应能力。"
+            },
+            {
+                question: "作为马来西亚公民，我们在日常生活中维护和尊崇国语地位的正确做法是什么？",
+                options: ["拒绝学习其他任何语言", "以流利、规范的国语进行沟通，并在正式与公共场合积极使用国语", "认为国语只在应付学校考试时有用", "仅在出国旅游时才使用国语"],
+                answer: 1, // B
+                explanation: "维护国语尊严是公民的共同责任，大家应在日常生活和公共交流中自豪并规范地使用国语。"
+            }
+        ];
+
+        // 全局变量
+        let currentStudent = { name: '', email: '' };
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timerInterval = null;
+        let timeElapsed = 0;
+        let teacherDataList = [];
+
+        // 4. 实时监听 Firebase 数据库更新排行榜
+        const scoresRef = collection(db, "quiz_scores");
+        const q = query(scoresRef, orderBy("score", "desc"), orderBy("timeElapsed", "asc"));
+
+        onSnapshot(q, (snapshot) => {
+            const leaderboardList = document.getElementById('leaderboard-list');
+            leaderboardList.innerHTML = '';
+            teacherDataList = [];
+
+            let rank = 1;
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                teacherDataList.push(data);
+
+                if (rank <= 5) {
+                    const item = document.createElement('div');
+                    item.className = "flex justify-between items-center bg-white p-2.5 rounded-xl border border-slate-100 shadow-sm text-sm";
+                    item.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold ${rank === 1 ? 'text-amber-500' : rank === 2 ? 'text-slate-400' : rank === 3 ? 'text-amber-700' : 'text-slate-500'}">${rank}.</span>
+                            <span class="font-semibold text-slate-700 truncate max-w-[100px]">${data.name}</span>
+                        </div>
+                        <div class="text-xs text-slate-500">
+                            <span class="font-bold text-indigo-600">${data.score}分</span> (${data.timeElapsed}s)
+                        </div>
+                    `;
+                    leaderboardList.appendChild(item);
+                }
+                rank++;
+            });
+
+            if (snapshot.empty) {
+                leaderboardList.innerHTML = '<p class="text-slate-400 text-sm text-center py-4">暂无答题记录</p>';
+            }
+        });
+
+        // 5. 校验与开始答题
+        window.startQuiz = () => {
+            const name = document.getElementById('input-name').value.trim();
+            const email = document.getElementById('input-email').value.trim();
+            const emailError = document.getElementById('email-error');
+
+            if (!name || !email) {
+                alert("请填写姓名和邮箱！");
+                return;
+            }
+
+            if (!email.endsWith("@moe-dl.edu.my")) {
+                emailError.classList.remove('hidden');
+                return;
+            } else {
+                emailError.classList.add('hidden');
+            }
+
+            currentStudent = { name, email };
+            
+            document.getElementById('view-login').classList.add('hidden');
+            document.getElementById('view-quiz').classList.remove('hidden');
+
+            timeElapsed = 0;
+            timerInterval = setInterval(() => {
+                timeElapsed++;
+                document.getElementById('quiz-timer').innerText = `⏱️ 用时: ${timeElapsed}s`;
+            }, 1000);
+
+            loadQuestion();
+        };
+
+        // 6. 加载题目
+        function loadQuestion() {
+            const qData = questions[currentQuestionIndex];
+            document.getElementById('quiz-progress').innerText = `题目 ${currentQuestionIndex + 1}/15`;
+            document.getElementById('question-text').innerText = `${currentQuestionIndex + 1}. ${qData.question}`;
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            document.getElementById('explanation-box').classList.add('hidden');
+
+            qData.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-4 rounded-xl border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/50 font-medium text-slate-700 transition flex items-center gap-3";
+                btn.innerHTML = `<span class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500">${String.fromCharCode(65 + idx)}</span> ${opt}`;
+                btn.onclick = () => selectAnswer(idx);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        // 7. 选择答案处理
+        function selectAnswer(selectedIdx) {
+            const qData = questions[currentQuestionIndex];
+            const optionsContainer = document.getElementById('options-container');
+            const buttons = optionsContainer.getElementsByTagName('button');
+
+            for (let btn of buttons) {
+                btn.disabled = true;
+                btn.classList.add('cursor-not-allowed');
+            }
+
+            const expBox = document.getElementById('explanation-box');
+            const expResult = document.getElementById('explanation-result');
+            const expText = document.getElementById('explanation-text');
+
+            if (selectedIdx === qData.answer) {
+                playSound('correct');
+                score += 10;
+                document.getElementById('quiz-score').innerText = `得分: ${score}`;
+                buttons[selectedIdx].classList.add('bg-emerald-100', 'border-emerald-500', 'text-emerald-800');
+                
+                expResult.innerText = "✅ 回答正确！";
+                expResult.className = "font-bold text-lg mb-1 text-emerald-700";
+            } else {
+                playSound('wrong');
+                buttons[selectedIdx].classList.add('bg-rose-100', 'border-rose-500', 'text-rose-800');
+                buttons[qData.answer].classList.add('bg-emerald-100', 'border-emerald-500', 'text-emerald-800');
+
+                expResult.innerText = "❌ 回答错误！";
+                expResult.className = "font-bold text-lg mb-1 text-rose-700";
+            }
+
+            expText.innerText = qData.explanation;
+            expBox.classList.remove('hidden');
+        }
+
+        // 8. 下一题或提交
+        window.nextQuestion = () => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < 15) {
+                loadQuestion();
+            } else {
+                finishQuiz();
+            }
+        };
+
+        // 9. 完成答题提交数据到 Firebase
+        async function finishQuiz() {
+            clearInterval(timerInterval);
+
+            document.getElementById('view-quiz').classList.add('hidden');
+            document.getElementById('view-result').classList.remove('hidden');
+
+            document.getElementById('final-student-info').innerText = `${currentStudent.name} (${currentStudent.email})`;
+            document.getElementById('final-score').innerText = `${score} 分`;
+
+            try {
+                await addDoc(collection(db, "quiz_scores"), {
+                    name: currentStudent.name,
+                    email: currentStudent.email,
+                    score: score,
+                    timeElapsed: timeElapsed,
+                    createdAt: serverTimestamp()
+                });
+            } catch (e) {
+                console.error("保存成绩失败: ", e);
+            }
+        }
+
+        // 10. 教师专区逻辑
+        window.openTeacherModal = () => {
+            document.getElementById('teacher-modal').classList.remove('hidden');
+            document.getElementById('teacher-auth-sec').classList.remove('hidden');
+            document.getElementById('teacher-data-sec').classList.add('hidden');
+            document.getElementById('teacher-password').value = '';
+            document.getElementById('password-error').classList.add('hidden');
+        };
+
+        window.closeTeacherModal = () => {
+            document.getElementById('teacher-modal').classList.add('hidden');
+        };
+
+        window.verifyTeacher = () => {
+            const pwd = document.getElementById('teacher-password').value;
+            if (pwd === "2020Hui%%") {
+                document.getElementById('teacher-auth-sec').classList.add('hidden');
+                document.getElementById('teacher-data-sec').classList.remove('hidden');
+                renderTeacherTable();
+            } else {
+                document.getElementById('password-error').classList.remove('hidden');
+            }
+        };
+
+        function renderTeacherTable() {
+            const tbody = document.getElementById('teacher-table-body');
+            tbody.innerHTML = '';
+            teacherDataList.forEach(item => {
+                const tr = document.createElement('tr');
+                const dateStr = item.createdAt ? new Date(item.createdAt.seconds * 1000).toLocaleString('zh-CN') : '刚提交';
+                tr.innerHTML = `
+                    <td class="p-3 font-semibold text-slate-800">${item.name}</td>
+                    <td class="p-3 text-slate-600">${item.email}</td>
+                    <td class="p-3 font-bold text-indigo-600">${item.score}</td>
+                    <td class="p-3 text-slate-500">${item.timeElapsed}s</td>
+                    <td class="p-3 text-xs text-slate-400">${dateStr}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    </script>
+</body>
+</html>
