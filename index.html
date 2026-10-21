@@ -1,842 +1,513 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <!-- Updated viewport meta to match index-2 and prevent mobile focus/cursor issues -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>English Racing Game</title>
+    <title>5年级历史：单元11 - 马来语是国语</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    
     <style>
-        /* Removed overflow: hidden from body to fix iOS Safari missing cursor bug */
-        body { margin: 0; font-family: 'Inter', sans-serif; }
-        #canvas-container { width: 100%; height: 50vh; display: block; touch-action: none; }
-        #ui-container { width: 100%; height: 50vh; display: flex; flex-direction: column; }
-        .btn-option { transition: all 0.1s ease; }
-        .btn-option:active:not(:disabled) { transform: scale(0.95); }
-        .hidden { display: none !important; }
-        
-        /* 速度表渐变高度过渡 */
-        #speed-bar { transition: height 0.1s linear, background-color 0.1s linear; }
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
     </style>
 </head>
-<!-- Removed overflow-hidden from body class to ensure inputs behave correctly on mobile -->
-<body class="bg-gray-50 flex flex-col h-screen w-screen">
+<body class="flex items-center justify-center p-4 min-h-screen">
 
-    <!-- 登录界面 -->
-    <div id="login-screen" class="absolute inset-0 bg-gradient-to-br from-yellow-400 via-lime-500 to-emerald-700 z-50 overflow-y-auto flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl p-6 md:p-10 relative">
-            <!-- 教师专区按钮 -->
-            <button onclick="showTeacherLogin()" class="absolute top-4 right-4 md:top-6 md:right-6 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm py-1.5 px-4 rounded-full flex items-center gap-2 transition-colors">
-                🔒 教师专区
-            </button>
-
-            <!-- 标题区 -->
-            <div class="text-center mb-8 mt-4 md:mt-0">
-                <h1 class="text-3xl md:text-4xl font-extrabold text-lime-700 mb-2">English Racing Game</h1>
-                <p class="text-gray-500 text-sm md:text-base">英语语法趣味赛车挑战系统</p>
-            </div>
-
-            <div class="flex flex-col md:flex-row gap-8">
-                <!-- 左侧表单 -->
-                <div class="flex-1 flex flex-col gap-5">
-                    <div>
-                        <label class="block text-gray-700 font-bold mb-2 text-sm">学生姓名 (中文 / 英文):</label>
-                        <!-- Added explicit user-select styles to ensure cursor appears on all mobile browsers -->
-                        <input type="text" id="student-name" placeholder="例如: 张小明 / Tan Ah Kow" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent" style="-webkit-user-select: text; user-select: text;">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 font-bold mb-2 text-sm">教育部邮箱 (Email):</label>
-                        <input type="email" id="student-email" placeholder="例如: m-1234567@moe-dl.edu.my" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent" style="-webkit-user-select: text; user-select: text;">
-                    </div>
-                    <button onclick="startGame()" class="w-full bg-lime-600 hover:bg-lime-700 text-white font-bold py-4 rounded-lg text-lg shadow-lg transition-transform active:scale-95 mt-2 flex justify-center items-center gap-2">
-                        开始答题 🚀
-                    </button>
-                </div>
-
-                <!-- 右侧英雄榜 -->
-                <div class="flex-1 bg-gray-50 rounded-xl border border-gray-200 p-5">
-                    <h3 class="text-yellow-600 font-bold mb-4 flex items-center gap-2">
-                        🏆 实时英雄榜 (Live)
-                    </h3>
-                    <div id="leaderboard-container" class="space-y-3 max-h-[300px] overflow-y-auto pr-2">
-                        <div class="text-center text-gray-500 text-sm py-4">正在加载排行榜数据...</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 游戏主界面 (初始隐藏) - Added overflow-hidden here to contain the game view -->
-    <div id="game-screen" class="hidden flex flex-col h-full w-full overflow-hidden">
-        <!-- 上半部分：3D 游戏画面 -->
-        <div id="canvas-container" class="relative bg-blue-200 select-none">
-            <canvas id="game-canvas" class="w-full h-full block"></canvas>
-            
-            <!-- 画布左侧的速度表 (新增) -->
-            <div id="speedometer" class="absolute left-4 bottom-4 w-12 h-36 md:w-16 md:h-48 bg-gray-900/80 rounded-full border-4 border-gray-700 flex flex-col items-center justify-end p-1 z-20 shadow-lg">
-                <div class="w-full h-full relative rounded-full overflow-hidden flex flex-col justify-end bg-gray-800">
-                    <div id="speed-bar" class="w-full bg-gradient-to-t from-green-400 via-yellow-400 to-red-500 rounded-full" style="height: 0%;"></div>
-                </div>
-                <div class="absolute top-3 text-gray-300 font-bold text-[10px] md:text-xs">km/h</div>
-                <div id="speed-text" class="absolute bottom-3 text-white font-bold text-sm md:text-lg">0</div>
-            </div>
-            
-            <!-- 画布上方的进度条(变更为总里程进度) -->
-            <div id="canvas-timer-bar-container" class="absolute top-0 left-0 w-full h-2 bg-gray-200/50 z-20">
-                <div id="canvas-timer-bar" class="bg-lime-500 h-full w-0 transition-all duration-100"></div>
-            </div>
-            
-            <!-- 画布右侧的出发按钮 (变更为长按) -->
-            <button id="canvas-drive-btn" class="absolute bottom-4 right-4 bg-lime-600 hover:bg-lime-700 active:bg-lime-800 text-white font-bold w-16 h-16 rounded-full shadow-[0_5px_15px_rgba(0,0,0,0.3)] flex flex-col items-center justify-center z-20 border-4 border-white opacity-50 pointer-events-none select-none touch-none">
-                <span class="text-2xl mb-0.5 pointer-events-none">🚗</span>
-                <span class="text-[10px] uppercase tracking-wider leading-none pointer-events-none">Hold</span>
-            </button>
-        </div>
-
-        <!-- 下半部分：答题控制区域 -->
-        <div id="ui-container" class="bg-white rounded-t-3xl shadow-[0_-10px_30px_rgba(0,0,0,0.1)] z-10 p-4 flex flex-col">
-            
-            <!-- 状态栏 -->
-            <div class="flex justify-between items-center mb-2 px-2">
-                <div class="bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full font-bold text-sm">
-                    Score: <span id="score-display">0</span>
-                </div>
-                <div class="bg-lime-100 text-lime-800 px-4 py-1 rounded-full font-bold text-sm">
-                    Question <span id="q-number">1</span>/<span id="q-total">20</span>
-                </div>
-            </div>
-
-            <!-- 题目区域 -->
-            <div class="flex-1 flex flex-col items-center justify-center overflow-y-auto">
-                <h2 id="question-text" class="text-xl md:text-2xl font-bold text-gray-800 text-center mb-4 px-4">
-                    There _____ a tense football match yesterday.
-                </h2>
-                
-                <!-- 选项网格 -->
-                <div id="options-container" class="grid grid-cols-2 gap-3 w-full max-w-md px-2 transition-opacity duration-300">
-                    <!-- 按钮由 JS 动态生成 -->
-                </div>
-
-                <!-- 题目解析框 (新增) -->
-                <div id="explanation-container" class="hidden mt-4 p-4 bg-blue-50 border border-blue-100 text-blue-800 rounded-xl text-sm md:text-base w-full max-w-md mx-2 shadow-sm font-medium">
-                    <!-- 解析由 JS 动态生成 -->
-                </div>
-                
-                <!-- Continue 按钮 (新增) -->
-                <button id="continue-btn" onclick="nextQuestion()" class="hidden mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl text-lg shadow-md transition-transform active:scale-95">Continue ➡️</button>
-            </div>
-            
-        </div>
-    </div>
-
-    <!-- 自定义弹窗 (避免使用 alert) -->
-    <div id="message-modal" class="hidden absolute inset-0 bg-black/60 z-[100] flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full text-center">
-            <h3 id="modal-title" class="text-xl font-bold text-gray-800 mb-2">提示</h3>
-            <p id="modal-msg" class="text-gray-600 mb-6">这里是消息内容。</p>
-            <!-- 密码输入区域 (仅教师专区显示) -->
-            <div id="password-area" class="hidden mb-6">
-                <input type="password" id="teacher-pwd" placeholder="请输入密码" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-lime-500" style="-webkit-user-select: text; user-select: text;">
-            </div>
-            <div class="flex justify-center gap-3">
-                <button id="modal-cancel-btn" onclick="closeModal()" class="hidden bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg">取消</button>
-                <button id="modal-ok-btn" onclick="closeModal()" class="bg-lime-600 hover:bg-lime-700 text-white font-bold py-2 px-6 rounded-lg">确定</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 导入 Firebase 与作为模块运行的脚本 -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // 配置 Firebase
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'english-racing-default-app';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        let app, auth, db;
+    <!-- 主容器 -->
+    <div class="glass-card w-full max-w-4xl p-6 md:p-8 relative">
         
-        try {
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-        } catch (e) {
-            console.error("Firebase init error:", e);
-        }
+        <!-- 教师专区入口按钮 -->
+        <button onclick="openTeacherModal()" class="absolute top-6 right-6 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 transition border border-slate-300 shadow-sm">
+            🔒 教师专区
+        </button>
 
+        <!-- 标题 -->
+        <div class="text-center mb-8">
+            <h1 class="text-2xl md:text-3xl font-extrabold text-indigo-700 tracking-wide">
+                5年级历史：单元11 - 马来语是国语
+            </h1>
+            <p class="text-slate-500 text-sm md:text-base mt-1">历史知识互动挑战系统 (共15题)</p>
+        </div>
+
+        <!-- 1. 登录与首页视图 -->
+        <div id="view-login" class="grid grid-cols-1 md:grid-cols-12 gap-8">
+            <!-- 表单输入区 -->
+            <div class="md:col-span-7 space-y-5">
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1">学生姓名 (中文 / 英文):</label>
+                    <input type="text" id="input-name" placeholder="例如: 张小明 / Tan Ah Kow" 
+                        class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1">教育部邮箱 (Email):</label>
+                    <input type="email" id="input-email" placeholder="例如: m-1234567@moe-dl.edu.my" 
+                        class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                    <p id="email-error" class="text-red-500 text-xs mt-1 hidden">邮箱格式必须以 @moe-dl.edu.my 结尾！</p>
+                </div>
+                <button onclick="startQuiz()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-indigo-500/30 transition duration-200 flex items-center justify-center gap-2 text-lg">
+                    开始答题 🚀
+                </button>
+            </div>
+
+            <!-- 排行榜区 -->
+            <div class="md:col-span-5 bg-slate-50 p-5 rounded-2xl border border-slate-200 flex flex-col justify-between">
+                <div>
+                    <h2 class="text-lg font-bold text-amber-600 flex items-center gap-2 mb-4">
+                        🏆 实时英雄榜
+                    </h2>
+                    <div id="leaderboard-list" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                        <p class="text-slate-400 text-sm text-center py-4">加载排行榜中...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 答题视图 (默认隐藏) -->
+        <div id="view-quiz" class="hidden">
+            <div class="flex justify-between items-center mb-6 bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                <span id="quiz-progress" class="font-bold text-indigo-700">题目 1/15</span>
+                <span id="quiz-timer" class="text-slate-600 font-semibold">⏱️ 用时: 0s</span>
+                <span id="quiz-score" class="font-bold text-emerald-600">得分: 0</span>
+            </div>
+
+            <div class="mb-6">
+                <h3 id="question-text" class="text-lg md:text-xl font-bold text-slate-800 mb-4">
+                    <!-- 题目内容 -->
+                </h3>
+                <div id="options-container" class="space-y-3">
+                    <!-- 选项按钮 -->
+                </div>
+            </div>
+
+            <!-- 解析与下一题区域 -->
+            <div id="explanation-box" class="hidden p-4 rounded-xl mb-4 bg-amber-50 border border-amber-200">
+                <p id="explanation-result" class="font-bold text-lg mb-1"></p>
+                <p id="explanation-text" class="text-slate-700 text-sm"></p>
+                <button onclick="nextQuestion()" class="mt-4 bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700 transition">
+                    下一题 ➔
+                </button>
+            </div>
+        </div>
+
+        <!-- 3. 结果视图 (默认隐藏) -->
+        <div id="view-result" class="hidden text-center py-8">
+            <div class="text-5xl mb-4">🎉</div>
+            <h2 class="text-2xl font-extrabold text-slate-800 mb-2">挑战完成！</h2>
+            <p id="final-student-info" class="text-slate-600 mb-4"></p>
+            <div class="text-4xl font-black text-indigo-600 mb-6" id="final-score">0 分</div>
+            <button onclick="location.reload()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-8 py-3 rounded-xl shadow-lg transition">
+                返回首页 🏠
+            </button>
+        </div>
+
+    </div>
+
+    <!-- 4. 教师专区 Modal 弹窗 -->
+    <div id="teacher-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-2xl shadow-2xl relative">
+            <button onclick="closeTeacherModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-xl font-bold">✕</button>
+            
+            <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                👨‍🏫 教师后台专区
+            </h2>
+
+            <!-- 密码输入区域 -->
+            <div id="teacher-auth-sec" class="space-y-4">
+                <p class="text-sm text-slate-600">请输入管理员密码以查看学生成绩记录：</p>
+                <input type="password" id="teacher-password" placeholder="请输入密码" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                <p id="password-error" class="text-red-500 text-xs hidden">密码错误！</p>
+                <button onclick="verifyTeacher()" class="w-full bg-indigo-600 text-white font-bold py-2 rounded-lg hover:bg-indigo-700">验证登录</button>
+            </div>
+
+            <!-- 数据展示区域 -->
+            <div id="teacher-data-sec" class="hidden space-y-4">
+                <div class="max-h-80 overflow-y-auto border border-slate-200 rounded-lg">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead class="bg-slate-100 text-slate-700 border-b">
+                            <tr>
+                                <th class="p-3">姓名</th>
+                                <th class="p-3">Email</th>
+                                <th class="p-3">得分</th>
+                                <th class="p-3">用时</th>
+                                <th class="p-3">提交时间</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teacher-table-body" class="divide-y divide-slate-100">
+                            <!-- 数据行 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK 模块引入与主逻辑代码 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // 1. Firebase 配置
+        const firebaseConfig = {
+            apiKey: "AIzaSyCUSwFcndhzcRfV-wEnrw-bBNM-_b5aBqw",
+            authDomain: "sej-y5-unit-11.firebaseapp.com",
+            projectId: "sej-y5-unit-11",
+            storageBucket: "sej-y5-unit-11.firebasestorage.app",
+            messagingSenderId: "506374535093",
+            appId: "1:506374535093:web:37bccf82804987536e4bfc",
+            measurementId: "G-647DC8CKRV"
+        };
+
+        // 初始化 Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // 2. Web Audio API 音效处理
+        const playSound = (type) => {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                if (type === 'correct') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+                    osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.3);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, ctx.currentTime);
+                    osc.frequency.setValueAtTime(164.81, ctx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.4);
+                }
+            } catch(e) { console.log('Audio error:', e); }
+        };
+
+        // 3. 15 道完整题目数组
         const questions = [
-            { q: "I _____ a great movie last night.", options: ["see", "saw", "seen", "seeing"], correct: 1, exp: "解析：句末的 last night 表明动作发生在过去，因此需要使用动词的过去式 saw。" },
-            { q: "There _____ a tense football match yesterday.", options: ["was", "is", "are", "were"], correct: 0, exp: "解析：yesterday表示过去时，且主语 a tense football match 是单数，所以用 was。" },
-            { q: "She _____ to the park every morning.", options: ["go", "going", "goes", "gone"], correct: 2, exp: "解析：every morning 表示经常性习惯，一般现在时。主语 She 是第三人称单数，动词加 -es，即 goes。" },
-            { q: "They _____ playing tennis right now.", options: ["was", "is", "were", "are"], correct: 3, exp: "解析：right now 表示现在进行时，主语 They 是复数，所以搭配 be 动词 are。" },
-            { q: "He has _____ his homework already.", options: ["do", "did", "doing", "done"], correct: 3, exp: "解析：has + 动词过去分词构成现在完成时。do 的过去分词是 done。" },
-            { q: "We _____ to London next week.", options: ["travel", "travelled", "are travelling", "have travelled"], correct: 2, exp: "解析：next week 表将来，可以用现在进行时表按计划将要发生的动作。" },
-            { q: "If it rains tomorrow, we _____ at home.", options: ["stay", "will stay", "stayed", "are staying"], correct: 1, exp: "解析：主将从现，if条件句用一般现在时，主句用一般将来时。" },
-            { q: "She is the _____ girl in our class.", options: ["tall", "taller", "tallest", "most tall"], correct: 2, exp: "解析：in our class 表明是在三者或以上的范围内比较，用最高级。" },
-            { q: "I have been living here _____ 2010.", options: ["since", "for", "in", "from"], correct: 0, exp: "解析：since + 具体的过去时间点，常用于现在完成时。" },
-            { q: "He is interested _____ learning new languages.", options: ["on", "at", "in", "about"], correct: 2, exp: "解析：固定搭配 be interested in (对...感兴趣)。" },
-            { q: "Would you mind _____ the window?", options: ["open", "to open", "opening", "opened"], correct: 2, exp: "解析：mind doing sth. (介意做某事)。" },
-            { q: "The book _____ by a famous author last year.", options: ["wrote", "was written", "is written", "has written"], correct: 1, exp: "解析：主语 book 和 write 是被动关系，且 last year 表过去，用一般过去时的被动语态。" },
-            { q: "Neither he nor I _____ wrong.", options: ["is", "am", "are", "be"], correct: 1, exp: "解析：neither...nor... 连接主语时，谓语动词遵循就近原则，离 I 近，用 am。" },
-            { q: "It's time you _____ to bed.", options: ["go", "went", "going", "will go"], correct: 1, exp: "解析：It's time (that) sb. did sth. 是一种虚拟语气，用过去式。" },
-            { q: "By the time we arrived, the train _____.", options: ["left", "has left", "had left", "was leaving"], correct: 2, exp: "解析：by the time + 过去时的句子，主句常用过去完成时，表示在过去某个时间之前已经完成的动作。" },
-            { q: "He asked me _____.", options: ["where did I live", "where I lived", "where do I live", "where I live"], correct: 1, exp: "解析：宾语从句需用陈述句语序，且主句是过去时，从句也要用相应的过去时态。" },
-            { q: "I look forward to _____ from you soon.", options: ["hear", "hearing", "heard", "be heard"], correct: 1, exp: "解析：look forward to 中的 to 是介词，后面接动名词 v.-ing。" },
-            { q: "Hardly had I reached the station _____ the train left.", options: ["when", "than", "then", "and"], correct: 0, exp: "解析：固定句型 Hardly...when... (一...就...)。" },
-            { q: "She _____ have finished the work, but she was lazy.", options: ["must", "could", "should", "can"], correct: 1, exp: "解析：could have done 表示本可以做某事但实际上未做。" },
-            { q: "Not only _____ to the party, but she also brought a gift.", options: ["did she come", "she came", "she did come", "came she"], correct: 0, exp: "解析：Not only 置于句首，所在的句子需要部分倒装。" }
+            {
+                question: "根据马来西亚联邦宪法，哪一个条文明确规定马来语（Bahasa Melayu）为国语？",
+                options: ["第 152 条文", "第 10 条文", "第 153 条文", "第 181 条文"],
+                answer: 0, // A
+                explanation: "联邦宪法第 152 条文（Perkara 152）明确奠定了马来语作为马来西亚国语（Bahasa Kebangsaan）的最高法律地位。"
+            },
+            {
+                question: "联邦宪法第152条文在阐明马来语为国语的同时，也保障了公民的哪项语言权利？",
+                options: ["只能在私密场合使用国语的权利", "自由学习和使用其他语言的权利（非官方用途）", "强制禁止所有学校教授母语的权力", "仅限在商业活动中使用外语的权利"],
+                answer: 1, // B
+                explanation: "宪法第 152 条文附带保障条款，规定任何人不得被禁止或阻止在非官方用途下学习、使用或教授其他语言，体现了多元语言与文化的包容性。"
+            },
+            {
+                question: "哪一项法案的颁布进一步巩固了马来语作为国语和官方语言的法律地位？",
+                options: ["《1948年煽动法案》", "《1957年独立法案》", "《1963/67年国家语言法案》（Akta Bahasa Kebangsaan 1963/67）", "《1963年马来西亚协定》"],
+                answer: 2, // C
+                explanation: "《1963/67年国家语言法案》在法律层面规范了马来语在政府行政机关、法庭等官方事务中的具体应用。"
+            },
+            {
+                question: "根据教育法案（如《1961年教育法案》与《1996年教育法案》），马来语在国家教育体系中的主要定位是什么？",
+                options: ["仅作为选修科目", "仅用于课外活动交流", "仅用于高等教育阶段", "国家教育体系中的主要教学媒介语"],
+                answer: 3, // D
+                explanation: "《1961年教育法案》与《1996年教育法案》皆明确将马来语列为国家教育体系中的主要教学媒介语，以落实国语教学策略。"
+            },
+            {
+                question: "马来语作为“官方语言”（Bahasa Rasmi）的主要应用场合是以下哪项？",
+                options: ["政府机关行政、立法、司法及官方公文交流", "国际贸易展览的唯一下单语言", "家庭内部的日常生活对话", "私人企业的内部娱乐活动"],
+                answer: 0, // A
+                explanation: "官方语言指的是政府机构在处理行政公文、立法议会议程及法庭审讯时所强制使用的指定法律语言。"
+            },
+            {
+                question: "马来语被称为“知识语言”（Bahasa Ilmu），主要体现在哪一方面？",
+                options: ["它是马六甲王朝时代唯一的货币单位", "它是外国游客来到马来西亚唯一能听懂的语言", "它具备传授与表达各种学术、科学和高等知识的能力", "它是所有戏剧表演中的指定语言"],
+                answer: 2, // C
+                explanation: "知识语言指的是一种语言具备足够的专业词汇量，能够作为撰写学术论著、进行高等教育教学与科技研究的媒介。"
+            },
+            {
+                question: "为什么马来语被视为马来西亚的“团结语言”（Bahasa Perpaduan）？",
+                options: ["因为它只被单一族群所使用", "因为它规定所有公民必须穿着相同的服装", "镜它是东南亚地区唯一的语言", "因为它作为共同沟通媒介，能够超越族群界限，促进各族相互理解"],
+                answer: 3, // D
+                explanation: "马来语作为全民共通语（Bahasa Perpaduan），能跨越种族与文化隔阂，促进不同族群之间的情感沟通与社会凝聚力。"
+            },
+            {
+                question: "在历史（如马六甲王朝时期）上，马来语曾扮演“通用语”（Lingua Franca）的角色，其含义是什么？",
+                options: ["仅在宫廷内使用的秘密语言", "不同语言背景的人群之间共同使用的沟通语言", "仅用于书写历史诗歌的特殊语言", "仅限宗教祭司使用的语言"],
+                answer: 1, // B
+                explanation: "Lingua Franca（通用语） 是指来自不同地区、使用不同母语的人群在交往和交易时所共同使用的中介语言。"
+            },
+            {
+                question: "在古代东南亚，马来语作为“商业语言”（Bahasa Perdagangan）发挥了重要作用，主要是因为什么？",
+                options: ["马来语简明易学，并广泛传播于区域内的各大港口与贸易中心", "各国商人必须通过翻译官考试才能交易", "当时法律禁止商人使用其他任何外语", "马来语是当时唯一的商品代名词"],
+                answer: 0, // A
+                explanation: "马来语因其结构简单易学，并在东南亚海上贸易网络（如马六甲港口）中广泛流通，从而成为各国商贾洽谈贸易的必备语言。"
+            },
+            {
+                question: "在马来西亚，主要负责推广、发展马来语文及出版相关书籍的政府机构是哪一个？",
+                options: ["国家旅游局（Tourism Malaysia）", "国家档案馆（Arkib Negara Malaysia）", "国家文化与艺术局（JKKN）", "国家语文局（Dewan Bahasa dan Pustaka, DBP）"],
+                answer: 3, // D
+                explanation: "国家语文局（DBP） 是成立于 1956 年的法定机构，专门致力于规范马来语语法、拓展新词汇及出版各类学术与文学读物。"
+            },
+            {
+                question: "国家语文局（DBP）著名的推广口号是什么，意在强调语言与民族精神的紧密联系？",
+                options: ["\"Majulah Singapura\"", "\"Kerana Mu Malaysia\"", "\"Bahasa Jiwa Bangsa\"", "\"Malaysia Boleh\""],
+                answer: 2, // C
+                explanation: "“Bahasa Jiwa Bangsa”（语言是民族的灵魂） 是推广国语运动的核心精神口号，表达了语言对于建立国家尊严与族群认同的重要性。"
+            },
+            {
+                question: "每年政府都会举办哪项全国性活动，以提高全民尊崇和使用国语的意识？",
+                options: ["国语月（Bulan Bahasa Kebangsaan）", "独立月（Bulan Kemerdekaan）", "青年科技节（Festival Belia）", "国家文化周（Minggu Kebudayaan）"],
+                answer: 0, // A
+                explanation: "政府通过举办每年一度的“国语月”（Bulan Bahasa Kebangsaan），在全国各阶层推动各类语文竞赛与宣传，鼓励大众规范使用国语。"
+            },
+            {
+                question: "哪所国立大学的建立是马来语作为高等教育教学媒介语（知识语言）的重要里程碑？",
+                options: ["马来亚大学（UM）", "马来西亚国民大学（Universiti Kebangsaan Malaysia, UKM）", "理科大学（USM）", "工艺大学（UTM）"],
+                answer: 1, // B
+                explanation: "马来西亚国民大学（UKM） 于 1970 年创办，率先全面采用马来语作为学术与科研教学媒介，证明了马来语作为高等知识语言的能力。"
+            },
+            {
+                question: "许多外来词汇（如 kemeja, jendela, sekolah, hospital 等）融入马来语词库，这说明了马来语具有什么特性？",
+                options: ["缺乏独立的词汇体系", "完全排斥其他文化的影响", "具有很强的开放性与包容性，能够丰富自身的词汇", "只在近代才开始发展"],
+                answer: 2, // C
+                explanation: "马来语在漫长的发展历程中积极吸收梵语、阿拉伯语、葡萄牙语和英语等借词，展示了其高度的开放性与包容性。"
+            },
+            {
+                question: "作为马来西亚公民，我们在日常生活中维护和尊崇国语地位的正确做法是什么？",
+                options: ["拒绝学习其他任何语言", "认为国语只在应付学校考试时有用", "仅在出国旅游时才使用国语", "以流利、规范的国语进行沟通，并在正式与公共场合积极使用国语"],
+                answer: 3, // D
+                explanation: "尊崇国语是爱国精神的体现，公民应当在公共交往中积极且规范地使用国语，同时尊重并掌握其他语言。"
+            }
         ];
 
+        // 全局变量
+        let currentStudent = { name: '', email: '' };
         let currentQuestionIndex = 0;
         let score = 0;
-        let playerName = "";
-        
-        // 驾驶相关变量
-        let canDrive = false;
-        let isHoldingGo = false;
-        let driveTimeAccumulated = 0;
-        const TOTAL_DRIVE_TIME_NEEDED = 5000; // 每题需要开 5 秒
-        let moveProgress = 0; 
-        const PROGRESS_PER_QUESTION = 1 / questions.length; 
-        
-        // 渲染相关
-        let currentSpeed = 0; // 0 to 120 km/h
-        let lastTime = 0;
-        let hasAnsweredCurrentQuestion = false;
+        let timerInterval = null;
+        let timeElapsed = 0;
+        let teacherDataList = [];
 
-        // ==========================================
-        // 1. Firebase 排行榜逻辑
-        // ==========================================
-        async function initFirebaseAndAuth() {
-            if (!auth) return;
-            try {
-                if (typeof __initial_auth_token !== 'undefined') {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
+        // 4. 实时监听 Firebase 数据库更新排行榜
+        const scoresRef = collection(db, "quiz_scores");
+        const q = query(scoresRef, orderBy("score", "desc"));
+
+        onSnapshot(q, (snapshot) => {
+            const leaderboardList = document.getElementById('leaderboard-list');
+            leaderboardList.innerHTML = '';
+            teacherDataList = [];
+
+            let allRecords = [];
+            snapshot.forEach((doc) => {
+                allRecords.push(doc.data());
+            });
+
+            allRecords.sort((a, b) => {
+                if (b.score !== a.score) {
+                    return b.score - a.score;
                 }
-                
-                // 监听公共排行榜数据
-                const lbRef = collection(db, 'artifacts', appId, 'public', 'data', 'leaderboard');
-                onSnapshot(lbRef, (snapshot) => {
-                    let records = [];
-                    snapshot.forEach(doc => records.push(doc.data()));
-                    // 在内存中排序 (遵守 Firestore No Complex Queries 规则)
-                    records.sort((a, b) => b.score - a.score);
-                    renderLeaderboard(records);
-                }, (error) => {
-                    console.error("Leaderboard sync failed:", error);
-                });
-            } catch (e) {
-                console.error("Auth failed:", e);
-            }
-        }
-
-        function renderLeaderboard(records) {
-            const container = document.getElementById('leaderboard-container');
-            container.innerHTML = '';
-            if (records.length === 0) {
-                container.innerHTML = '<div class="text-center text-gray-400 py-2">暂无排名数据</div>';
-                return;
-            }
-            records.forEach((record, index) => {
-                const rankColor = index === 0 ? 'text-yellow-500' : (index === 1 ? 'text-gray-400' : (index === 2 ? 'text-amber-600' : 'text-gray-400'));
-                container.innerHTML += `
-                    <div class="bg-white rounded-lg p-3 flex justify-between items-center shadow-sm border border-gray-100">
-                        <div class="flex items-center gap-3">
-                            <span class="${rankColor} font-bold text-lg">${index + 1}.</span>
-                            <span class="text-gray-800 font-medium">${record.name}</span>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-emerald-700 font-bold">${record.score}分</span>
-                        </div>
-                    </div>`;
-            });
-        }
-
-        async function submitScore() {
-            if (!auth || !auth.currentUser || !playerName) return;
-            try {
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', auth.currentUser.uid);
-                await setDoc(docRef, {
-                    name: playerName,
-                    score: score,
-                    timestamp: Date.now()
-                });
-            } catch (e) {
-                console.error("Score submit error:", e);
-            }
-        }
-
-        // ==========================================
-        // 2. 核心控制逻辑
-        // ==========================================
-        window.showMessage = function(title, msg, type = 'alert', onConfirm = null) {
-            document.getElementById('message-modal').classList.remove('hidden');
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-msg').innerText = msg;
-            
-            const pwdArea = document.getElementById('password-area');
-            const cancelBtn = document.getElementById('modal-cancel-btn');
-            const okBtn = document.getElementById('modal-ok-btn');
-            
-            pwdArea.classList.add('hidden');
-            document.getElementById('teacher-pwd').value = '';
-            cancelBtn.classList.add('hidden');
-            
-            okBtn.onclick = () => {
-                if (onConfirm) onConfirm();
-                else window.closeModal();
-            };
-
-            if (type === 'prompt') {
-                pwdArea.classList.remove('hidden');
-                cancelBtn.classList.remove('hidden');
-                cancelBtn.onclick = window.closeModal;
-            }
-        }
-
-        window.closeModal = function() {
-            document.getElementById('message-modal').classList.add('hidden');
-        }
-
-        window.showTeacherLogin = function() {
-            window.showMessage("教师专区", "请输入教师管理密码：", "prompt", () => {
-                const pwd = document.getElementById('teacher-pwd').value;
-                if (pwd === '2020Hui%%') {
-                    window.closeModal();
-                    window.showMessage("登录成功", "欢迎进入教师后台！(演示功能)");
-                } else {
-                    window.showMessage("错误", "密码错误，请重试！");
-                }
-            });
-        }
-
-        window.startGame = function() {
-            const name = document.getElementById('student-name').value.trim();
-            const email = document.getElementById('student-email').value.trim();
-
-            if (!name) {
-                window.showMessage("输入错误", "请输入学生姓名！");
-                return;
-            }
-            if (!email.endsWith('@moe-dl.edu.my')) {
-                window.showMessage("格式错误", "邮箱必须以 @moe-dl.edu.my 结尾！");
-                return;
-            }
-
-            playerName = name;
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('game-screen').classList.remove('hidden');
-            
-            initAudio();
-            submitScore(); // 初始化提交 0 分
-            
-            setTimeout(() => {
-                window.dispatchEvent(new Event('resize'));
-                lastTime = performance.now();
-                loadQuestion();
-            }, 100);
-        }
-
-        // ==========================================
-        // 3. 游戏机制 (答题与长按驾驶)
-        // ==========================================
-        function loadQuestion() {
-            const q = questions[currentQuestionIndex];
-            hasAnsweredCurrentQuestion = false;
-            canDrive = false;
-            driveTimeAccumulated = 0;
-            
-            document.getElementById('q-number').innerText = currentQuestionIndex + 1;
-            document.getElementById('question-text').innerText = q.q;
-            
-            // 重置 UI
-            document.getElementById('options-container').classList.remove('pointer-events-none');
-            document.getElementById('explanation-container').classList.add('hidden');
-            document.getElementById('canvas-drive-btn').classList.add('opacity-50', 'pointer-events-none');
-            document.getElementById('canvas-drive-btn').classList.remove('animate-pulse');
-            document.getElementById('continue-btn').classList.add('hidden');
-        
-            const container = document.getElementById('options-container');
-            container.innerHTML = '';
-            
-            q.options.forEach((opt, idx) => {
-                const btn = document.createElement('button');
-                btn.className = 'btn-option bg-red-500 hover:bg-red-600 text-white font-bold py-4 rounded-xl text-lg w-full transition-colors shadow-sm';
-                btn.innerText = opt;
-                btn.onclick = () => handleAnswer(idx, btn);
-                container.appendChild(btn);
-            });
-        }
-
-        function handleAnswer(selectedIndex, btnElement) {
-            if (hasAnsweredCurrentQuestion) return; // 只能答一次
-            hasAnsweredCurrentQuestion = true;
-
-            const q = questions[currentQuestionIndex];
-            const allButtons = document.querySelectorAll('.btn-option');
-            
-            // 禁用所有按钮
-            document.getElementById('options-container').classList.add('pointer-events-none');
-            
-            // 标记正确和错误的视觉效果
-            allButtons.forEach((btn, idx) => {
-                btn.disabled = true;
-                if (idx === q.correct) {
-                    // 正确答案标绿
-                    btn.className = 'btn-option bg-green-200 text-green-900 border-2 border-green-500 font-bold py-4 rounded-xl text-lg w-full transition-colors shadow-sm scale-[1.02]';
-                } else if (idx === selectedIndex && selectedIndex !== q.correct) {
-                    // 选错的保持深红/加上边框
-                    btn.className = 'btn-option bg-red-600 text-white border-2 border-red-800 font-bold py-4 rounded-xl text-lg w-full opacity-90';
-                } else {
-                    // 其他无关选项降低透明度
-                    btn.classList.add('opacity-40');
-                }
+                return (a.timeElapsed || 0) - (b.timeElapsed || 0);
             });
 
-            if (selectedIndex === q.correct) {
-                window.playCorrectSound(); 
-                score += 20;
-                document.getElementById('score-display').innerText = score;
-                submitScore(); // 更新分数到排行榜
-                
-                // 只有答对才能驾驶
-                canDrive = true;
-                const driveBtn = document.getElementById('canvas-drive-btn');
-                driveBtn.classList.remove('opacity-50', 'pointer-events-none');
-                driveBtn.classList.add('animate-pulse'); // 提示玩家可以长按了
-            } else {
-                window.playWrongSound(); 
-                // 答错直接显示 Continue 按钮，不能驾驶
-                canDrive = false;
-                document.getElementById('continue-btn').classList.remove('hidden');
-            }
+            teacherDataList = allRecords;
 
-            // 显示解析
-            const expContainer = document.getElementById('explanation-container');
-            expContainer.innerText = q.exp;
-            expContainer.classList.remove('hidden');
-        }
-
-        // 新增：手动进入下一题逻辑
-        window.nextQuestion = function() {
-            document.getElementById('continue-btn').classList.add('hidden');
-            currentQuestionIndex++;
-            if (currentQuestionIndex < questions.length) {
-                document.getElementById('canvas-drive-btn').classList.remove('hidden');
-                loadQuestion();
-            } else {
-                document.getElementById('question-text').innerText = "🏆 终点达成！挑战完成！";
-                document.getElementById('explanation-container').classList.add('hidden');
-                document.getElementById('q-number').innerText = questions.length;
-                
-                const optionsContainer = document.getElementById('options-container');
-                // 修复：移除 pointer-events-none 使按钮可以点击
-                optionsContainer.classList.remove('pointer-events-none');
-                optionsContainer.innerHTML = `
-                    <button onclick="resetGame(true)" class="bg-lime-600 hover:bg-lime-700 text-white font-bold py-4 rounded-xl text-lg w-full shadow-lg transition-transform active:scale-95">Play Again</button>
-                    <button onclick="goMain()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl text-lg w-full shadow-lg transition-transform active:scale-95">Main (主页)</button>
+            allRecords.slice(0, 5).forEach((data, index) => {
+                const rank = index + 1;
+                const item = document.createElement('div');
+                item.className = "flex justify-between items-center bg-white p-2.5 rounded-xl border border-slate-100 shadow-sm text-sm";
+                item.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold ${rank === 1 ? 'text-amber-500' : rank === 2 ? 'text-slate-400' : rank === 3 ? 'text-amber-700' : 'text-slate-500'}">${rank}.</span>
+                        <span class="font-semibold text-slate-700 truncate max-w-[100px]">${data.name}</span>
+                    </div>
+                    <div class="text-xs text-slate-500">
+                        <span class="font-bold text-indigo-600">${data.score}分</span> (${data.timeElapsed || 0}s)
+                    </div>
                 `;
-            }
-        }
-
-        window.resetGame = function(startImmediately) {
-            currentQuestionIndex = 0;
-            score = 0;
-            moveProgress = 0;
-            currentSpeed = 0;
-            document.getElementById('score-display').innerText = '0';
-            document.getElementById('canvas-timer-bar').style.width = '0%';
-            
-            if (trackCurve && carModel) {
-                updateCameraAndCar();
-                if (renderer3D) renderer3D.render(scene3D, camera3D);
-            }
-            
-            if (startImmediately) {
-                loadQuestion();
-            }
-        }
-
-        window.goMain = function() {
-            resetGame(false);
-            document.getElementById('game-screen').classList.add('hidden');
-            document.getElementById('login-screen').classList.remove('hidden');
-            document.getElementById('student-name').value = '';
-            document.getElementById('student-email').value = '';
-        }
-
-        // ==========================================
-        // 4. 驾驶交互事件 (长按)
-        const goBtn = document.getElementById('canvas-drive-btn');
-
-        function startDriveAction(e) {
-            if (e) e.preventDefault();
-            if (!canDrive) return;
-            isHoldingGo = true;
-            window.playEngineSound();
-            goBtn.classList.remove('animate-pulse');
-            goBtn.classList.add('scale-90', 'border-lime-300'); // 按下视觉反馈
-        }
-
-        function stopDriveAction(e) {
-            if (e) e.preventDefault();
-            isHoldingGo = false;
-            window.stopEngineSound();
-            goBtn.classList.remove('scale-90', 'border-lime-300');
-        }
-
-        goBtn.addEventListener('mousedown', startDriveAction);
-        goBtn.addEventListener('touchstart', startDriveAction, {passive: false});
-        
-        window.addEventListener('mouseup', stopDriveAction);
-        window.addEventListener('touchend', stopDriveAction);
-        window.addEventListener('mouseleave', stopDriveAction); // 防止移出窗口
-
-        let audioCtx;
-        let engineOsc, engineGain, engineFilter;
-
-        function initAudio() {
-            if (audioCtx) return;
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            audioCtx = new AudioContext();
-
-            // 解锁音频
-            const unlockSource = audioCtx.createBufferSource();
-            unlockSource.buffer = audioCtx.createBuffer(1, 1, 22050);
-            unlockSource.connect(audioCtx.destination);
-            unlockSource.start(0);
-
-            // 初始化引擎声音
-            engineOsc = audioCtx.createOscillator();
-            engineOsc.type = 'sawtooth';
-            engineOsc.frequency.value = 60; 
-            
-            engineFilter = audioCtx.createBiquadFilter();
-            engineFilter.type = 'lowpass';
-            engineFilter.frequency.value = 120;
-            
-            engineGain = audioCtx.createGain();
-            engineGain.gain.value = 0; // 初始静音
-            
-            engineOsc.connect(engineFilter);
-            engineFilter.connect(engineGain);
-            engineGain.connect(audioCtx.destination);
-            engineOsc.start();
-        }
-
-        window.playCorrectSound = () => {
-            if (!audioCtx) return;
-            const t = audioCtx.currentTime;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'sine';
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            
-            osc.frequency.setValueAtTime(659.25, t); 
-            gain.gain.setValueAtTime(0, t);
-            gain.gain.linearRampToValueAtTime(0.04, t + 0.05); 
-            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
-            
-            osc.frequency.setValueAtTime(1046.50, t + 0.15); 
-            gain.gain.setValueAtTime(0, t + 0.15);
-            gain.gain.linearRampToValueAtTime(0.04, t + 0.2);
-            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
-            
-            osc.start(t);
-            osc.stop(t + 0.6);
-        };
-
-        window.playWrongSound = () => {
-            if (!audioCtx) return;
-            const t = audioCtx.currentTime;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'triangle';
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            
-            osc.frequency.setValueAtTime(200, t);
-            osc.frequency.exponentialRampToValueAtTime(100, t + 0.3);
-            
-            gain.gain.setValueAtTime(0, t);
-            gain.gain.linearRampToValueAtTime(0.03, t + 0.05); 
-            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
-            
-            osc.start(t);
-            osc.stop(t + 0.4);
-        };
-
-        window.playEngineSound = () => {
-            if (!audioCtx || !engineGain) return;
-            engineGain.gain.setTargetAtTime(0.08, audioCtx.currentTime, 0.1);
-            engineOsc.frequency.setTargetAtTime(110, audioCtx.currentTime, 0.5); // 音高提高
-            engineFilter.frequency.setTargetAtTime(400, audioCtx.currentTime, 0.5);
-        };
-
-        window.stopEngineSound = () => {
-            if (!audioCtx || !engineGain) return;
-            engineGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.2);
-            engineOsc.frequency.setTargetAtTime(60, audioCtx.currentTime, 0.3);
-            engineFilter.frequency.setTargetAtTime(120, audioCtx.currentTime, 0.3);
-        };
-
-        let scene3D, camera3D, renderer3D, carModel, trackCurve;
-        let animatedEnvironment = []; 
-
-        function init3D() {
-            const canvas = document.getElementById('game-canvas');
-            const container = document.getElementById('canvas-container');
-            
-            scene3D = new THREE.Scene();
-            scene3D.background = new THREE.Color(0x7ec8e3); 
-            scene3D.fog = new THREE.Fog(0x7ec8e3, 50, 800);
-
-            // 透视摄像机
-            camera3D = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
-            
-            renderer3D = new THREE.WebGLRenderer({ canvas, antialias: true });
-            renderer3D.setSize(container.clientWidth, container.clientHeight);
-            renderer3D.setPixelRatio(window.devicePixelRatio);
-
-            const ambient = new THREE.AmbientLight(0xffffff, 0.7);
-            scene3D.add(ambient);
-            
-            const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
-            dirLight.position.set(100, 200, 50);
-            scene3D.add(dirLight);
-
-            // 太阳
-            const sunGeo = new THREE.SphereGeometry(30, 32, 32);
-            const sunMat = new THREE.MeshBasicMaterial({color: 0xffe87c});
-            const sun = new THREE.Mesh(sunGeo, sunMat);
-            sun.position.set(-150, 180, -400); 
-            scene3D.add(sun);
-            animatedEnvironment.push({ obj: sun, type: 'sun' });
-
-            // 草地
-            const ground = new THREE.Mesh(
-                new THREE.PlaneGeometry(5000, 5000),
-                new THREE.MeshPhongMaterial({color: 0x66c066}) 
-            );
-            ground.rotation.x = -Math.PI / 2;
-            ground.position.y = -0.5;
-            scene3D.add(ground);
-
-            // 赛道曲线
-            const points = [];
-            let curX = 0, curZ = 0;
-            for(let i=0; i<30; i++) {
-                points.push(new THREE.Vector3(curX, 0, curZ));
-                curX += (Math.random() - 0.5) * 150; 
-                curZ -= 150;
-            }
-            trackCurve = new THREE.CatmullRomCurve3(points);
-            
-            const tubeGeo = new THREE.TubeGeometry(trackCurve, 300, 15, 8, false);
-            tubeGeo.scale(1, 0.05, 1);
-            const roadMat = new THREE.MeshPhongMaterial({color: 0x4b5563});
-            const road = new THREE.Mesh(tubeGeo, roadMat);
-            scene3D.add(road);
-
-            carModel = new THREE.Group();
-            
-            // 红色车身
-            const bodyMat = new THREE.MeshPhongMaterial({color: 0xe74c3c});
-            const body = new THREE.Mesh(new THREE.BoxGeometry(10, 3, 16), bodyMat);
-            body.position.y = 2.5;
-            carModel.add(body);
-
-            // 黑色车窗
-            const topMat = new THREE.MeshPhongMaterial({color: 0x222222});
-            const carTop = new THREE.Mesh(new THREE.BoxGeometry(8, 3, 8), topMat);
-            carTop.position.set(0, 5.5, -1);
-            carModel.add(carTop);
-
-            // 深蓝色底盘包围
-            const chassisMat = new THREE.MeshPhongMaterial({color: 0x2c3e50});
-            const chassis = new THREE.Mesh(new THREE.BoxGeometry(10.5, 1, 17), chassisMat);
-            chassis.position.y = 0.5;
-            carModel.add(chassis);
-
-            // 红色双支架尾翼
-            const spoilerMat = new THREE.MeshPhongMaterial({color: 0xe74c3c});
-            const spoilerBoard = new THREE.Mesh(new THREE.BoxGeometry(11, 1, 4), spoilerMat);
-            spoilerBoard.position.set(0, 7, 7);
-            
-            const supportMat = new THREE.MeshPhongMaterial({color: 0x2c3e50});
-            const support1 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 3, 1), supportMat);
-            support1.position.set(-3, 5.5, 7);
-            const support2 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 3, 1), supportMat);
-            support2.position.set(3, 5.5, 7);
-            carModel.add(spoilerBoard, support1, support2);
-
-            // 亮红色尾灯
-            const tailLightMat = new THREE.MeshBasicMaterial({color: 0xff0000});
-            const tL = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 0.5), tailLightMat);
-            tL.position.set(-3, 2.5, 8.1);
-            const tR = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 0.5), tailLightMat);
-            tR.position.set(3, 2.5, 8.1);
-            carModel.add(tL, tR);
-
-            // 车轮
-            const wheelMat = new THREE.MeshPhongMaterial({color: 0x111111});
-            const wheelGeo = new THREE.CylinderGeometry(2, 2, 1.5, 16);
-            wheelGeo.rotateZ(Math.PI / 2);
-            const positions = [[-5.5, 2, -5], [5.5, 2, -5], [-5.5, 2, 5], [5.5, 2, 5]];
-            positions.forEach(pos => {
-                const w = new THREE.Mesh(wheelGeo, wheelMat);
-                w.position.set(...pos);
-                carModel.add(w);
+                leaderboardList.appendChild(item);
             });
 
-            scene3D.add(carModel);
-
-            // 密集的周边风景
-            function spawnScenery(pos, lookTarget) {
-                const rand = Math.random();
-                let obj;
-                if (rand < 0.5) {
-                    obj = new THREE.Group();
-                    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(1, 1.5, 6), new THREE.MeshPhongMaterial({color: 0x8B4513}));
-                    trunk.position.y = 3;
-                    const leaves = new THREE.Mesh(new THREE.ConeGeometry(5, 12, 6), new THREE.MeshPhongMaterial({color: 0x2e8b57}));
-                    leaves.position.y = 12;
-                    obj.add(trunk, leaves);
-                } else if (rand < 0.7) {
-                    obj = new THREE.Group();
-                    const height = 10 + Math.random() * 10;
-                    const bldg = new THREE.Mesh(new THREE.BoxGeometry(10, height, 10), new THREE.MeshPhongMaterial({color: 0xe5e7eb}));
-                    bldg.position.y = height / 2;
-                    const roof = new THREE.Mesh(new THREE.ConeGeometry(8, 8, 4), new THREE.MeshPhongMaterial({color: 0xef4444}));
-                    roof.position.y = height + 4;
-                    roof.rotation.y = Math.PI / 4;
-                    obj.add(bldg, roof);
-                } else {
-                    obj = new THREE.Mesh(new THREE.BoxGeometry(4, 5, 7), new THREE.MeshPhongMaterial({color: 0xfcd34d}));
-                    obj.position.y = 2.5;
-                }
-                obj.position.copy(pos);
-                obj.lookAt(lookTarget);
-                scene3D.add(obj);
+            if (allRecords.length === 0) {
+                leaderboardList.innerHTML = '<p class="text-slate-400 text-sm text-center py-4">暂无答题记录</p>';
             }
-
-            for(let i=0.01; i<0.99; i+=0.01) {
-                const pt = trackCurve.getPointAt(i);
-                const tangent = trackCurve.getTangentAt(i);
-                const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
-                
-                const pos1 = pt.clone().add(normal.clone().multiplyScalar(15 + Math.random() * 15));
-                spawnScenery(pos1, pt);
-                const pos2 = pt.clone().add(normal.clone().multiplyScalar(-15 - Math.random() * 15));
-                spawnScenery(pos2, pt);
-            }
-
-            updateCameraAndCar();
-            renderer3D.render(scene3D, camera3D);
-            lastTime = performance.now();
-            requestAnimationFrame(animate3D);
-        }
-
-        function updateCameraAndCar() {
-            if(!trackCurve || !carModel) return;
-            
-            const pt = trackCurve.getPointAt(moveProgress);
-            const tangent = trackCurve.getTangentAt(moveProgress);
-            
-            carModel.position.copy(pt);
-            const lookAtPt = pt.clone().add(tangent);
-            carModel.lookAt(lookAtPt);
-
-            // 正后方跟随视角
-            const camOffset = tangent.clone().multiplyScalar(-30);
-            camOffset.y = 12; 
-            camera3D.position.copy(pt).add(camOffset);
-            camera3D.lookAt(pt.clone().add(new THREE.Vector3(0, 5, 0))); 
-
-            // 让太阳始终在前方
-            animatedEnvironment.forEach(item => {
-                if(item.type === 'sun') {
-                    item.obj.position.copy(pt).add(tangent.clone().multiplyScalar(400));
-                    item.obj.position.y = 180;
-                }
-            });
-        }
-
-        function animate3D(time) {
-            requestAnimationFrame(animate3D);
-            
-            // 计算时间增量
-            const dt = time - lastTime;
-            lastTime = time;
-
-            if (canDrive && isHoldingGo && driveTimeAccumulated < TOTAL_DRIVE_TIME_NEEDED) {
-                // 车正在加速/行驶
-                driveTimeAccumulated += dt;
-                
-                // 确保不超过 5 秒上限
-                if (driveTimeAccumulated > TOTAL_DRIVE_TIME_NEEDED) {
-                    driveTimeAccumulated = TOTAL_DRIVE_TIME_NEEDED;
-                }
-
-                // 进度累加 = (当前 dt / 5000ms) * 本题应走的路程比例
-                const progressRatio = dt / TOTAL_DRIVE_TIME_NEEDED;
-                moveProgress += progressRatio * PROGRESS_PER_QUESTION;
-                
-                if (moveProgress > 1) moveProgress = 1;
-                
-                updateCameraAndCar();
-
-                // 速度表加速
-                currentSpeed = Math.min(currentSpeed + dt * 0.1, 108); // 最高速模拟 108km/h
-
-            } else {
-                // 没按住，或者本题驾驶结束，速度表减速回落
-                currentSpeed = Math.max(currentSpeed - dt * 0.15, 0);
-
-                // 检查是否开完了 5 秒
-                if (canDrive && driveTimeAccumulated >= TOTAL_DRIVE_TIME_NEEDED) {
-                    canDrive = false;
-                    isHoldingGo = false;
-                    window.stopEngineSound();
-                    
-                    document.getElementById('canvas-drive-btn').classList.add('hidden');
-                    
-                    // 驾驶完成后显示 Continue 按钮，等待用户手动点击进入下一题
-                    document.getElementById('continue-btn').classList.remove('hidden');
-                }
-            }
-
-            // 更新仪表盘UI
-            document.getElementById('speed-text').innerText = Math.floor(currentSpeed);
-            document.getElementById('speed-bar').style.height = `${(currentSpeed / 120) * 100}%`;
-            
-            // 更新顶部总体进度条
-            document.getElementById('canvas-timer-bar').style.width = `${moveProgress * 100}%`;
-
-            renderer3D.render(scene3D, camera3D);
-        }
-
-        window.addEventListener('resize', () => {
-            if (!camera3D || !renderer3D) return;
-            const container = document.getElementById('canvas-container');
-            if (container.clientWidth === 0) return; // 隐藏状态下不处理
-            camera3D.aspect = container.clientWidth / container.clientHeight;
-            camera3D.updateProjectionMatrix();
-            renderer3D.setSize(container.clientWidth, container.clientHeight);
-            renderer3D.render(scene3D, camera3D);
+        }, (error) => {
+            console.error("Firebase 读取错误: ", error);
+            document.getElementById('leaderboard-list').innerHTML = '<p class="text-red-400 text-sm text-center py-4">排行榜读取失败</p>';
         });
 
-        // 初始启动
-        window.onload = () => {
-            initFirebaseAndAuth(); // 初始化 Firebase，提前监听排行榜
-            init3D();
+        // 5. 校验与开始答题
+        window.startQuiz = () => {
+            const name = document.getElementById('input-name').value.trim();
+            const email = document.getElementById('input-email').value.trim();
+            const emailError = document.getElementById('email-error');
+
+            if (!name || !email) {
+                alert("请填写姓名和邮箱！");
+                return;
+            }
+
+            if (!email.endsWith("@moe-dl.edu.my")) {
+                emailError.classList.remove('hidden');
+                return;
+            } else {
+                emailError.classList.add('hidden');
+            }
+
+            currentStudent = { name, email };
+            
+            document.getElementById('view-login').classList.add('hidden');
+            document.getElementById('view-quiz').classList.remove('hidden');
+
+            timeElapsed = 0;
+            timerInterval = setInterval(() => {
+                timeElapsed++;
+                document.getElementById('quiz-timer').innerText = `⏱️ 用时: ${timeElapsed}s`;
+            }, 1000);
+
+            loadQuestion();
         };
 
+        // 6. 加载题目
+        function loadQuestion() {
+            const qData = questions[currentQuestionIndex];
+            document.getElementById('quiz-progress').innerText = `题目 ${currentQuestionIndex + 1}/15`;
+            document.getElementById('question-text').innerText = `${currentQuestionIndex + 1}. ${qData.question}`;
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            document.getElementById('explanation-box').classList.add('hidden');
+
+            qData.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-4 rounded-xl border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/50 font-medium text-slate-700 transition flex items-center gap-3";
+                btn.innerHTML = `<span class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500">${String.fromCharCode(65 + idx)}</span> ${opt}`;
+                btn.onclick = () => selectAnswer(idx);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        // 7. 选择答案处理
+        function selectAnswer(selectedIdx) {
+            const qData = questions[currentQuestionIndex];
+            const optionsContainer = document.getElementById('options-container');
+            const buttons = optionsContainer.getElementsByTagName('button');
+
+            for (let btn of buttons) {
+                btn.disabled = true;
+                btn.classList.add('cursor-not-allowed');
+            }
+
+            const expBox = document.getElementById('explanation-box');
+            const expResult = document.getElementById('explanation-result');
+            const expText = document.getElementById('explanation-text');
+
+            if (selectedIdx === qData.answer) {
+                playSound('correct');
+                score += 10;
+                document.getElementById('quiz-score').innerText = `得分: ${score}`;
+                buttons[selectedIdx].classList.add('bg-emerald-100', 'border-emerald-500', 'text-emerald-800');
+                
+                expResult.innerText = "✅ 回答正确！";
+                expResult.className = "font-bold text-lg mb-1 text-emerald-700";
+            } else {
+                playSound('wrong');
+                buttons[selectedIdx].classList.add('bg-rose-100', 'border-rose-500', 'text-rose-800');
+                buttons[qData.answer].classList.add('bg-emerald-100', 'border-emerald-500', 'text-emerald-800');
+
+                expResult.innerText = "❌ 回答错误！";
+                expResult.className = "font-bold text-lg mb-1 text-rose-700";
+            }
+
+            expText.innerText = qData.explanation;
+            expBox.classList.remove('hidden');
+        }
+
+        // 8. 下一题或提交
+        window.nextQuestion = () => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < 15) {
+                loadQuestion();
+            } else {
+                finishQuiz();
+            }
+        };
+
+        // 9. 完成答题提交数据到 Firebase
+        async function finishQuiz() {
+            clearInterval(timerInterval);
+
+            document.getElementById('view-quiz').classList.add('hidden');
+            document.getElementById('view-result').classList.remove('hidden');
+
+            document.getElementById('final-student-info').innerText = `${currentStudent.name} (${currentStudent.email})`;
+            document.getElementById('final-score').innerText = `${score} 分`;
+
+            try {
+                await addDoc(collection(db, "quiz_scores"), {
+                    name: currentStudent.name,
+                    email: currentStudent.email,
+                    score: score,
+                    timeElapsed: timeElapsed,
+                    createdAt: serverTimestamp()
+                });
+            } catch (e) {
+                console.error("保存成绩失败: ", e);
+            }
+        }
+
+        // 10. 教师专区逻辑
+        window.openTeacherModal = () => {
+            document.getElementById('teacher-modal').classList.remove('hidden');
+            document.getElementById('teacher-auth-sec').classList.remove('hidden');
+            document.getElementById('teacher-data-sec').classList.add('hidden');
+            document.getElementById('teacher-password').value = '';
+            document.getElementById('password-error').classList.add('hidden');
+        };
+
+        window.closeTeacherModal = () => {
+            document.getElementById('teacher-modal').classList.add('hidden');
+        };
+
+        window.verifyTeacher = () => {
+            const pwd = document.getElementById('teacher-password').value;
+            if (pwd === "2020Hui%%") {
+                document.getElementById('teacher-auth-sec').classList.add('hidden');
+                document.getElementById('teacher-data-sec').classList.remove('hidden');
+                renderTeacherTable();
+            } else {
+                document.getElementById('password-error').classList.remove('hidden');
+            }
+        };
+
+        function renderTeacherTable() {
+            const tbody = document.getElementById('teacher-table-body');
+            tbody.innerHTML = '';
+            teacherDataList.forEach(item => {
+                const tr = document.createElement('tr');
+                const dateStr = item.createdAt ? new Date(item.createdAt.seconds * 1000).toLocaleString('zh-CN') : '刚提交';
+                tr.innerHTML = `
+                    <td class="p-3 font-semibold text-slate-800">${item.name}</td>
+                    <td class="p-3 text-slate-600">${item.email}</td>
+                    <td class="p-3 font-bold text-indigo-600">${item.score}</td>
+                    <td class="p-3 text-slate-500">${item.timeElapsed}s</td>
+                    <td class="p-3 text-xs text-slate-400">${dateStr}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
     </script>
 </body>
 </html>
